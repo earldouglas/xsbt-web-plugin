@@ -11,9 +11,9 @@ servlets](https://en.wikipedia.org/wiki/Java_servlet).
 
 * Package a project as a *.war* file
 * Test and run under Jetty or Tomcat
-* Deploy directly to Heroku or AWS
-* Supports sbt 0.13.6 and up
-* Supports Scala 2.10.2 and up
+* Deploy directly to AWS
+* Supports sbt 1.3.0+ and 0.13.6 - 0.13.18
+* Supports Scala 2.10.2+
 
 ## Getting help
 
@@ -471,25 +471,8 @@ containerShutdownOnExit := false
 
 ### Deploying to Heroku
 
-Enable the `HerokuDeploy` plugin and configure your app name:
-
-```scala
-enablePlugins(HerokuDeploy)
-
-herokuAppName := "my-heroku-app"
-```
-
-Either install the [Heroku Toolbelt](https://toolbelt.heroku.com/), or
-set your Heroku API key as an environment variable, launch sbt, and
-deploy with `herokuDeploy`:
-
-```
-$ HEROKU_API_KEY="xxx-xxx-xxxx" sbt
-> herokuDeploy
-```
-
-Check out your deployed application at
-`https://my-heroku-app.herokuapp.com`.
+See Heroku's [WAR
+Deployment](https://devcenter.heroku.com/articles/war-deployment) guide.
 
 ### Deploying to Elastic Beanstalk
 
