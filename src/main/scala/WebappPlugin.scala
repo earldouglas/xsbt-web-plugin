@@ -37,8 +37,7 @@ object V5WebappPlugin extends AutoPlugin {
         assets := {
           val srcDir: File =
             (sourceDirectory in Compile).value / "webapp"
-          (srcDir ** "*")
-            .get
+          (srcDir ** "*").get
             .flatMap(src =>
               IO
                 .relativize(srcDir, src)
