@@ -31,44 +31,38 @@ object V5WebappPlugin extends AutoPlugin {
 
   override def requires = plugins.JvmPlugin
 
-  private def defaultAssets(srcDir: File): Map[File, String] =
-    (srcDir ** "*").get
-      .flatMap(source =>
-        IO
-          .relativize(srcDir, source)
-          .map(dest => source -> dest)
-      )
-      .toMap
-
-  private def defaultClasses(
-      mappings: Seq[(File, String)]
-  ): Map[File, String] =
-    mappings
-      .map({ case (source, dest) => source -> s"classes/${dest}" })
-      .toMap
-
-  private def defaultLib(
-      classpath: Keys.Classpath
-  ): Map[File, String] = {
-    classpath
-      .map(_.data)
-      .filter(in => !in.isDirectory && in.getName.endsWith(".jar"))
-      .map(source => source -> s"lib/${source.name}")
-      .toMap
-  }
-
   override def projectSettings: Seq[Setting[_]] =
     inConfig(Webapp)(
       Seq(
-        assets := defaultAssets(
-          (sourceDirectory in Compile).value / "webapp"
-        ),
-        classes := defaultClasses(
-          (mappings in packageBin in Compile).value
-        ),
-        lib := defaultLib(
-          (fullClasspath in Runtime).value
-        )
+        assets := {
+          val srcDir: File =
+            (sourceDirectory in Compile).value / "webapp"
+          (srcDir ** "*")
+            .get
+            .flatMap(src =>
+              IO
+                .relativize(srcDir, src)
+                .map(dst => src -> dst)
+            )
+            .toMap
+        },
+        classes := {
+          val classesMappings: Seq[(File, String)] =
+            (mappings in packageBin in Compile).value
+          classesMappings
+            .map({ case (src, dst) => src -> s"classes/${dst}" })
+            .toMap
+        },
+        lib := {
+          val cp: Keys.Classpath =
+            (fullClasspath in Runtime).value
+          cp
+            .map(_.data)
+            .filter(f => f.isFile())
+            .filter(f => f.getName().endsWith(".jar"))
+            .map(src => src -> s"lib/${src.name}")
+            .toMap
+        }
       )
     )
 }
