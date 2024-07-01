@@ -1,23 +1,13 @@
-TaskKey[Unit]("check") := {
-
-  import v5.WarFile
-
-  def toMap(xs: Seq[WarFile]): Map[File, String] =
-    xs
-      .map({ case WarFile(source, warPath) => (source -> warPath) })
-      .toMap
+TaskKey[Unit]("check-classes") := {
 
   def assertEquals(
     name: String,
     expected: Map[File, String],
-    obtained: Seq[WarFile]
+    obtained: Map[File, String]
   ): Unit = {
 
-    def sizesDoNotMatch = expected.size != obtained.size
-
-    val obtainedMap = toMap(obtained)
-
-    def mappingsDoNotMatch = expected != obtainedMap
+    val sizesDoNotMatch = expected.size != obtained.size
+    val mappingsDoNotMatch = expected != obtained
 
     if (sizesDoNotMatch || mappingsDoNotMatch) {
       sys.error(
@@ -25,25 +15,11 @@ TaskKey[Unit]("check") := {
             |  expected:
             |${expected.mkString("    - ", "\n    - ", "")}
             |  obtained:
-            |${obtainedMap.mkString("    - ", "\n    - ", "")}
+            |${obtained.mkString("    - ", "\n    - ", "")}
             |""".stripMargin
       )
     }
   }
-
-  assertEquals(
-    name = "assets",
-    expected = {
-      val root: File = (Compile / sourceDirectory).value
-      Map(
-          root / "webapp" -> "",
-          root / "webapp" / "WEB-INF" -> "WEB-INF",
-          root / "webapp" / "WEB-INF" / "web.xml" -> "WEB-INF/web.xml",
-          root / "webapp" / "index.html" -> "index.html",
-      )
-    },
-    obtained = (Webapp / assets).value
-  )
 
   assertEquals(
     name = "classes",
@@ -69,38 +45,4 @@ TaskKey[Unit]("check") := {
     },
     obtained = (Webapp / classes).value
   )
-
-  def assertContains(
-    name: String,
-    expected: Set[String],
-    obtained: Seq[WarFile]
-  ): Unit = {
-
-    def sizesDoNotMatch = expected.size != obtained.size
-
-    val obtainedMap = toMap(obtained)
-
-    def mappingsDoNotMatch = expected != obtainedMap.values.toSet
-
-    if (sizesDoNotMatch || mappingsDoNotMatch) {
-      sys.error(
-        s"""|${name}:
-            |  expected: ${expected}
-            |  obtained:
-            |${obtainedMap.mkString("    - ", "\n    - ", "")}
-            |""".stripMargin
-      )
-    }
-  }
-
-  assertContains(
-    name = "lib",
-    expected =
-      Set(
-        "lib/scala-library.jar",
-        "lib/h2-2.2.224.jar",
-      ),
-    obtained = (Webapp / lib).value
-  )
-
 }

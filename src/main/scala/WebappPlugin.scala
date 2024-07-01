@@ -10,8 +10,6 @@ import sbt.FilesInfo.lastModified
 import sbt.FilesInfo.exists
 import sbt.FileFunction.cached
 
-case class WarFile(source: File, warPath: String)
-
 object V5WebappPlugin extends AutoPlugin {
 
   object autoImport {
@@ -20,50 +18,43 @@ object V5WebappPlugin extends AutoPlugin {
       config("webapp").hide
 
     lazy val assets =
-      settingKey[Seq[WarFile]]("assets")
+      settingKey[Map[File, String]]("assets")
 
     lazy val classes =
-      taskKey[Seq[WarFile]]("classes")
+      taskKey[Map[File, String]]("classes")
 
     lazy val lib =
-      taskKey[Seq[WarFile]]("lib")
+      taskKey[Map[File, String]]("lib")
   }
 
   import autoImport._
 
   override def requires = plugins.JvmPlugin
 
-  private def defaultAssets(srcDir: File): Seq[WarFile] = {
+  private def defaultAssets(srcDir: File): Map[File, String] =
     (srcDir ** "*").get
-      .flatMap(f => {
-        IO.relativize(srcDir, f)
-          .map(warPath => {
-            WarFile(
-              source = f,
-              warPath = warPath
-            )
-          })
-      })
-  }
+      .flatMap(source =>
+        IO
+          .relativize(srcDir, source)
+          .map(dest => source -> dest)
+      )
+      .toMap
 
   private def defaultClasses(
       mappings: Seq[(File, String)]
-  ): Seq[WarFile] = {
-    mappings.map({ case (file, string) =>
-      WarFile(source = file, warPath = s"classes/${string}")
-    })
-  }
+  ): Map[File, String] =
+    mappings
+      .map({ case (source, dest) => source -> s"classes/${dest}" })
+      .toMap
 
-  private def defaultLib(classpath: Keys.Classpath): Seq[WarFile] = {
+  private def defaultLib(
+      classpath: Keys.Classpath
+  ): Map[File, String] = {
     classpath
       .map(_.data)
       .filter(in => !in.isDirectory && in.getName.endsWith(".jar"))
-      .map(f => {
-        WarFile(
-          source = f,
-          warPath = s"lib/${f.name}"
-        )
-      })
+      .map(source => source -> s"lib/${source.name}")
+      .toMap
   }
 
   override def projectSettings: Seq[Setting[_]] =
@@ -75,8 +66,9 @@ object V5WebappPlugin extends AutoPlugin {
         classes := defaultClasses(
           (mappings in packageBin in Compile).value
         ),
-        lib := defaultLib((fullClasspath in Runtime).value)
+        lib := defaultLib(
+          (fullClasspath in Runtime).value
+        )
       )
     )
-
 }
