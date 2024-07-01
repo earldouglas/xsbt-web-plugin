@@ -70,12 +70,12 @@ object V5WebappPlugin extends AutoPlugin {
     inConfig(Webapp)(
       Seq(
         assets := defaultAssets(
-          (Compile / sourceDirectory).value / "webapp"
+          (sourceDirectory in Compile).value / "webapp"
         ),
         classes := defaultClasses(
-          (Compile / packageBin / mappings).value
+          (mappings in packageBin in Compile).value
         ),
-        lib := defaultLib((Runtime / fullClasspath).value)
+        lib := defaultLib((fullClasspath in Runtime).value)
       )
     )
 
