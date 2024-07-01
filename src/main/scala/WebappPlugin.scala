@@ -34,8 +34,7 @@ object V5WebappPlugin extends AutoPlugin {
   override def requires = plugins.JvmPlugin
 
   private def defaultAssets(srcDir: File): Seq[WarFile] = {
-    (srcDir ** "*")
-      .get
+    (srcDir ** "*").get
       .flatMap(f => {
         IO.relativize(srcDir, f)
           .map(warPath => {
@@ -47,7 +46,9 @@ object V5WebappPlugin extends AutoPlugin {
       })
   }
 
-  private def defaultClasses(mappings: Seq[(File, String)]): Seq[WarFile] = {
+  private def defaultClasses(
+      mappings: Seq[(File, String)]
+  ): Seq[WarFile] = {
     mappings.map({ case (file, string) =>
       WarFile(source = file, warPath = s"classes/${string}")
     })
@@ -68,8 +69,12 @@ object V5WebappPlugin extends AutoPlugin {
   override def projectSettings: Seq[Setting[_]] =
     inConfig(Webapp)(
       Seq(
-        assets := defaultAssets((Compile / sourceDirectory).value / "webapp"),
-        classes := defaultClasses((Compile / packageBin / mappings).value),
+        assets := defaultAssets(
+          (Compile / sourceDirectory).value / "webapp"
+        ),
+        classes := defaultClasses(
+          (Compile / packageBin / mappings).value
+        ),
         lib := defaultLib((Runtime / fullClasspath).value)
       )
     )
