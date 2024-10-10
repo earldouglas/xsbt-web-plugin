@@ -3,7 +3,7 @@ package com.earldouglas.sbt.war
 import sbt.Def.Initialize
 import sbt.Def.settingKey
 import sbt.Keys._
-import sbt._
+import sbt.{given, _}
 
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -81,10 +81,7 @@ object WebappComponentsRunnerPlugin extends AutoPlugin {
         stopContainerInstance()
 
         val runnerJars: Seq[File] =
-          Classpaths
-            .managedJars(Webapp, classpathTypes.value, update.value)
-            .map(_.data)
-            .toList
+          WebappPackageRunnerPluginCompat.runnerJars(Webapp).value
 
         streams.value.log.info("[sbt-war] Starting server")
         val process: ScalaProcess =
@@ -115,9 +112,7 @@ object WebappComponentsRunnerPlugin extends AutoPlugin {
     val onLoadSetting: Initialize[State => State] =
       Def.setting {
         (Global / onLoad).value
-          .compose { state: State =>
-            state.addExitHook(stopContainerInstance())
-          }
+          .compose(_.addExitHook(stopContainerInstance()))
       }
 
     val runnerLibraries: Initialize[Seq[ModuleID]] =

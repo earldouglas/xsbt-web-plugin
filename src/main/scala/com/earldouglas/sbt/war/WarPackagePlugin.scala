@@ -1,10 +1,9 @@
 package com.earldouglas.sbt.war
 
-import sbt.Def.Initialize
 import sbt.Keys.artifact
 import sbt.Keys.moduleName
 import sbt.Keys.{`package` => pkg}
-import sbt._
+import sbt.{given, _}
 
 /** Identifies the files that compose the .war file (resources, .class
   * files in the classes/ directory, and .jar files in the lib/
@@ -16,17 +15,16 @@ import sbt._
   */
 object WarPackagePlugin extends AutoPlugin {
 
+
   override def requires = WebappComponentsPlugin
 
   override lazy val projectSettings: Seq[Setting[_]] = {
 
-    // Flip webappContents around from (dst -> src) to (src -> dst)
-    val packageContents: Initialize[Task[Seq[(java.io.File, String)]]] =
-      WebappComponentsPlugin.webappContents
-        .map(_.map(_.swap).toSeq)
-
     val packageTaskSettings: Seq[Setting[_]] =
-      Defaults.packageTaskSettings(pkg, packageContents)
+      Defaults.packageTaskSettings(
+        pkg,
+        WarPackagePluginCompat.packageContents
+      )
 
     val packageArtifactSetting: Setting[_] =
       pkg / artifact := Artifact(moduleName.value, "war", "war")

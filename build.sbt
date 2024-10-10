@@ -4,7 +4,14 @@ name := "sbt-war"
 organization := "com.earldouglas"
 sbtPlugin := true
 scalacOptions ++= Seq("-feature", "-deprecation")
-scalaVersion := "2.12.18" // https://scalameta.org/metals/blog/2023/07/19/silver#support-for-scala-21218
+scalaVersion := "2.12.20"
+crossScalaVersions += "3.3.4"
+pluginCrossBuild / sbtVersion := {
+  scalaBinaryVersion.value match {
+    case "2.12" => (pluginCrossBuild / sbtVersion).value
+    case _      => "2.0.0-M2"
+  }
+}
 
 // scripted-plugin
 scriptedBufferLog := false
@@ -15,10 +22,28 @@ scriptedBatchExecution := true
 scriptedParallelInstances := 8
 
 // Scalafix
+/*
 semanticdbEnabled := true
 semanticdbVersion := scalafixSemanticdb.revision
-scalacOptions += "-Ywarn-unused-import"
-scalacOptions += s"-P:semanticdb:sourceroot:${baseDirectory.value}"
+scalacOptions ++= {
+  scalaBinaryVersion.value match {
+    case "2.12" =>
+      Seq(
+        "-Ywarn-unused-import",
+        s"-P:semanticdb:sourceroot:${baseDirectory.value}"
+      )
+    case _      =>
+      Seq("-Wunused:imports")
+  }
+}
+*/
+
+scalacOptions ++= {
+  scalaBinaryVersion.value match {
+    case "2.12" => Nil
+    case _      => Seq("-language:implicitConversions")
+  }
+}
 
 // webapp-runner
 lazy val webappRunnerVersion =

@@ -3,7 +3,7 @@ package com.earldouglas.sbt.war
 import sbt.Def.Initialize
 import sbt.Def.taskKey
 import sbt.Keys._
-import sbt._
+import sbt.{given, _}
 
 /** Identifies the files that compose the webapp (resources, .class
   * files, and .jar files). This is used by user-facing plugins
@@ -54,17 +54,15 @@ object WebappComponentsPlugin extends AutoPlugin {
     val webappResourcesTask: Initialize[Task[Map[String, File]]] =
       (Compile / sourceDirectory)
         .map(_ / "webapp")
-        .map(WebappComponents.getResources)
+        .map(WebappComponents.getResources(_))
 
     val webappClassesTask: Initialize[Task[Map[String, File]]] =
-      (Runtime / fullClasspath)
-        .map(_.files)
-        .map(WebappComponents.getClasses)
+      WebappComponentsPluginCompat.classpathFiles
+        .map(WebappComponents.getClasses(_))
 
     val webappLibTask: Initialize[Task[Map[String, File]]] =
-      (Runtime / fullClasspath)
-        .map(_.files)
-        .map(WebappComponents.getLib)
+      WebappComponentsPluginCompat.classpathFiles
+        .map(WebappComponents.getLib(_))
 
     Seq(
       webappResources := webappResourcesTask.value,
