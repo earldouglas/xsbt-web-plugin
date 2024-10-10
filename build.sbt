@@ -22,26 +22,12 @@ scriptedBatchExecution := true
 scriptedParallelInstances := 8
 
 // Scalafix
-/*
 semanticdbEnabled := true
 semanticdbVersion := scalafixSemanticdb.revision
 scalacOptions ++= {
   scalaBinaryVersion.value match {
-    case "2.12" =>
-      Seq(
-        "-Ywarn-unused-import",
-        s"-P:semanticdb:sourceroot:${baseDirectory.value}"
-      )
-    case _      =>
-      Seq("-Wunused:imports")
-  }
-}
-*/
-
-scalacOptions ++= {
-  scalaBinaryVersion.value match {
-    case "2.12" => Nil
-    case _      => Seq("-language:implicitConversions")
+    case "2.12" => Seq("-Ywarn-unused-import")
+    case _      => Seq.empty // ("-Wunused:imports")
   }
 }
 

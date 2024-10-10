@@ -3,7 +3,7 @@ package com.earldouglas.sbt.war
 import sbt.Def.Initialize
 import sbt.Def.settingKey
 import sbt.Keys._
-import sbt.{given, _}
+import sbt._
 
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -50,7 +50,7 @@ object WebappComponentsRunnerPlugin extends AutoPlugin {
     val runnerConfigFile: Initialize[Task[File]] =
       Def.task {
 
-        val emptyDir: File = (Compile / target).value / "empty"
+        val emptyDir: File = Compat.Compile_target.value / "empty"
 
         val resourceMapString =
           WebappComponentsPlugin.webappContents.value
@@ -60,7 +60,7 @@ object WebappComponentsRunnerPlugin extends AutoPlugin {
             .mkString(",")
 
         val configurationFile: File =
-          (Compile / target).value / "webapp-components.properties"
+          Compat.Compile_target.value / "webapp-components.properties"
 
         Files
           .writeString(
@@ -111,7 +111,7 @@ object WebappComponentsRunnerPlugin extends AutoPlugin {
 
     val onLoadSetting: Initialize[State => State] =
       Def.setting {
-        (Global / onLoad).value
+        (Compat.Global_onLoad).value
           .compose(_.addExitHook(stopContainerInstance()))
       }
 
@@ -129,7 +129,7 @@ object WebappComponentsRunnerPlugin extends AutoPlugin {
       webappJoin := joinWebapp.value,
       webappStop := stopWebapp.value,
       webappForkOptions := forkOptions.value,
-      Global / onLoad := onLoadSetting.value,
+      Compat.Global_onLoad := onLoadSetting.value,
       webappComponentsRunnerVersion := BuildInfo.webappComponentsRunnerVersion,
       libraryDependencies ++= runnerLibraries.value
     )

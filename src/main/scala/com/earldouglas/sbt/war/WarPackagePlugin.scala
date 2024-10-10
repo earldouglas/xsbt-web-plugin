@@ -1,9 +1,8 @@
 package com.earldouglas.sbt.war
 
-import sbt.Keys.artifact
-import sbt.Keys.moduleName
+import sbt.Keys._
 import sbt.Keys.{`package` => pkg}
-import sbt.{given, _}
+import sbt._
 
 /** Identifies the files that compose the .war file (resources, .class
   * files in the classes/ directory, and .jar files in the lib/
@@ -14,7 +13,6 @@ import sbt.{given, _}
   * This is also used by other user-facing plugins (WebappRunnerPlugin).
   */
 object WarPackagePlugin extends AutoPlugin {
-
 
   override def requires = WebappComponentsPlugin
 
@@ -27,10 +25,10 @@ object WarPackagePlugin extends AutoPlugin {
       )
 
     val packageArtifactSetting: Setting[_] =
-      pkg / artifact := Artifact(moduleName.value, "war", "war")
+      Compat.pkg_artifact := Artifact(moduleName.value, "war", "war")
 
     val artifactSettings: Seq[Setting[_]] =
-      addArtifact(Compile / pkg / artifact, pkg)
+      addArtifact(Compat.Compile_pkg_artifact, pkg)
 
     Seq(
       packageTaskSettings,

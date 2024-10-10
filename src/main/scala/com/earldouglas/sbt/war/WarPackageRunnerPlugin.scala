@@ -1,10 +1,9 @@
 package com.earldouglas.sbt.war
 
 import sbt.Def.Initialize
-import sbt.Def.settingKey
 import sbt.Keys._
 import sbt.Keys.{`package` => pkg}
-import sbt.{given, _}
+import sbt._
 
 import java.util.concurrent.atomic.AtomicReference
 import scala.sys.process.{Process => ScalaProcess}
@@ -58,7 +57,7 @@ object WarPackageRunnerPlugin extends AutoPlugin {
                 warForkOptions.value,
                 Seq(
                   "-jar",
-                  runner.file.getPath(),
+                  runner.getPath(),
                   "--port",
                   warPort.value.toString(),
                   WarPackageRunnerPluginCompat
@@ -88,7 +87,7 @@ object WarPackageRunnerPlugin extends AutoPlugin {
 
     val onLoadSetting: Initialize[State => State] =
       Def.setting {
-        (Global / onLoad).value
+        Compat.Global_onLoad.value
           .compose(_.addExitHook(stopContainerInstance()))
       }
 
@@ -100,8 +99,11 @@ object WarPackageRunnerPlugin extends AutoPlugin {
 
     val runnerLibrary: Initialize[ModuleID] =
       Def.setting {
-        ("com.heroku" % "webapp-runner" % webappRunnerVersion.value)
-          .intransitive() % War
+        ModuleID(
+          organization = "com.heroku",
+          name = "webapp-runner",
+          revision = webappRunnerVersion.value
+        ).intransitive() % War
       }
 
     Seq(
@@ -110,7 +112,7 @@ object WarPackageRunnerPlugin extends AutoPlugin {
       warJoin := joinWar.value,
       warStop := stopWar.value,
       warForkOptions := forkOptions.value,
-      Global / onLoad := onLoadSetting.value,
+      Compat.Global_onLoad := onLoadSetting.value,
       libraryDependencies += runnerLibrary.value
     )
   }

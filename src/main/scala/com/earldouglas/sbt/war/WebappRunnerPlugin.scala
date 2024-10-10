@@ -1,7 +1,7 @@
 package com.earldouglas.sbt.war
 
 import sbt.Def.settingKey
-import sbt.{given, _}
+import sbt._
 
 /** Launches a webapp composed of in-place resources, classes, and
   * libraries.
