@@ -1,4 +1,5 @@
 package com.earldouglas.sbt.war
+
 import sbt.Def.settingKey
 import sbt._
 

@@ -2,7 +2,6 @@ package com.earldouglas.sbt.war
 
 import java.net.HttpURLConnection
 import java.net.URI
-import scala.collection.JavaConverters._
 import scala.io.Source
 
 object HttpClient {
@@ -42,11 +41,15 @@ object HttpClient {
     val response =
       Response(
         status = c.getResponseCode(),
-        headers = c
-          .getHeaderFields()
-          .asScala
+        headers = TestCompat
+          .asScala(
+            c
+              .getHeaderFields()
+          )
           .filter({ case (k, _) => k != null })
-          .map({ case (k, v) => (k, v.asScala.mkString(",")) })
+          .map({ case (k, v) =>
+            (k, TestCompat.asScala(v).mkString(","))
+          })
           .toMap - "Date" - "Content-Length" - "Server",
         body = Source.fromInputStream {
           if (c.getResponseCode() < 400) {

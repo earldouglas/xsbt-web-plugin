@@ -50,7 +50,7 @@ object WebappComponentsRunnerPlugin extends AutoPlugin {
     val runnerConfigFile: Initialize[Task[File]] =
       Def.task {
 
-        val emptyDir: File = (Compile / target).value / "empty"
+        val emptyDir: File = Compat.Compile_target.value / "empty"
 
         val resourceMapString =
           WebappComponentsPlugin.webappContents.value
@@ -60,7 +60,7 @@ object WebappComponentsRunnerPlugin extends AutoPlugin {
             .mkString(",")
 
         val configurationFile: File =
-          (Compile / target).value / "webapp-components.properties"
+          Compat.Compile_target.value / "webapp-components.properties"
 
         Files
           .writeString(
@@ -81,10 +81,7 @@ object WebappComponentsRunnerPlugin extends AutoPlugin {
         stopContainerInstance()
 
         val runnerJars: Seq[File] =
-          Classpaths
-            .managedJars(Webapp, classpathTypes.value, update.value)
-            .map(_.data)
-            .toList
+          Compat.managedJars(Webapp).value
 
         streams.value.log.info("[sbt-war] Starting server")
         val process: ScalaProcess =
@@ -114,10 +111,8 @@ object WebappComponentsRunnerPlugin extends AutoPlugin {
 
     val onLoadSetting: Initialize[State => State] =
       Def.setting {
-        (Global / onLoad).value
-          .compose { state: State =>
-            state.addExitHook(stopContainerInstance())
-          }
+        (Compat.Global_onLoad).value
+          .compose(_.addExitHook(stopContainerInstance()))
       }
 
     val runnerLibraries: Initialize[Seq[ModuleID]] =
@@ -134,7 +129,7 @@ object WebappComponentsRunnerPlugin extends AutoPlugin {
       webappJoin := joinWebapp.value,
       webappStop := stopWebapp.value,
       webappForkOptions := forkOptions.value,
-      Global / onLoad := onLoadSetting.value,
+      Compat.Global_onLoad := onLoadSetting.value,
       webappComponentsRunnerVersion := BuildInfo.webappComponentsRunnerVersion,
       libraryDependencies ++= runnerLibraries.value
     )

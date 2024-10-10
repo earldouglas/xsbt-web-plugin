@@ -1,7 +1,6 @@
 package com.earldouglas.sbt.war
 
 import sbt.Def.Initialize
-import sbt.Def.settingKey
 import sbt.Keys._
 import sbt.Keys.{`package` => pkg}
 import sbt._
@@ -47,13 +46,10 @@ object WarPackageRunnerPlugin extends AutoPlugin {
       Def.task {
         stopContainerInstance()
 
-        val runners: Seq[File] =
-          Classpaths
-            .managedJars(War, classpathTypes.value, update.value)
-            .map(_.data)
-            .toList
+        val runnerJars: Seq[File] =
+          Compat.managedJars(War).value
 
-        runners match {
+        runnerJars match {
           case runner :: Nil =>
             streams.value.log.info("[sbt-war] Starting server")
             val process: ScalaProcess =
@@ -61,16 +57,19 @@ object WarPackageRunnerPlugin extends AutoPlugin {
                 warForkOptions.value,
                 Seq(
                   "-jar",
-                  runner.file.getPath(),
+                  runner.getPath(),
                   "--port",
                   warPort.value.toString(),
-                  pkg.value.getPath()
+                  Compat
+                    .toFile(pkg)
+                    .value
+                    .getPath()
                 )
               )
             containerInstance.set(Some(process))
           case _ :: _ =>
             streams.value.log.error(
-              s"""[sbt-war] Expected one runner, but found ${runners.length}: ${runners
+              s"""[sbt-war] Expected one runner, but found ${runnerJars.length}: ${runnerJars
                   .mkString("\n  * ", "  * ", "")}"""
             )
           case _ =>
@@ -88,10 +87,8 @@ object WarPackageRunnerPlugin extends AutoPlugin {
 
     val onLoadSetting: Initialize[State => State] =
       Def.setting {
-        (Global / onLoad).value
-          .compose { state: State =>
-            state.addExitHook(stopContainerInstance())
-          }
+        Compat.Global_onLoad.value
+          .compose(_.addExitHook(stopContainerInstance()))
       }
 
     val forkOptions: Initialize[Task[ForkOptions]] =
@@ -102,7 +99,11 @@ object WarPackageRunnerPlugin extends AutoPlugin {
 
     val runnerLibrary: Initialize[ModuleID] =
       Def.setting {
-        ("com.heroku" % "webapp-runner" % webappRunnerVersion.value intransitive ()) % War
+        ModuleID(
+          organization = "com.heroku",
+          name = "webapp-runner",
+          revision = webappRunnerVersion.value
+        ).intransitive() % War
       }
 
     Seq(
@@ -111,7 +112,7 @@ object WarPackageRunnerPlugin extends AutoPlugin {
       warJoin := joinWar.value,
       warStop := stopWar.value,
       warForkOptions := forkOptions.value,
-      Global / onLoad := onLoadSetting.value,
+      Compat.Global_onLoad := onLoadSetting.value,
       libraryDependencies += runnerLibrary.value
     )
   }

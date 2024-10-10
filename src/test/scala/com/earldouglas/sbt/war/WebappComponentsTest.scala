@@ -7,6 +7,8 @@ import java.io.File
 
 class WebappComponentsTest extends AnyFunSuite with Matchers {
 
+  println("asdf")
+
   val fakeproject: File =
     new File("src/test/fakeproject/src/main/webapp")
 
@@ -19,6 +21,8 @@ class WebappComponentsTest extends AnyFunSuite with Matchers {
 
   test("getResources") {
 
+    println("getResources start")
+
     val expected: Map[String, File] =
       Map(
         "bar.html" -> "src/test/fakeproject/src/main/webapp/bar.html",
@@ -30,6 +34,8 @@ class WebappComponentsTest extends AnyFunSuite with Matchers {
       WebappComponents.getResources(fakeproject)
 
     obtained shouldBe expected
+
+    println("getResources end")
   }
 
   test("getClasses") {

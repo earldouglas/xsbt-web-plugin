@@ -2,7 +2,6 @@ package com.earldouglas.sbt.war
 
 import sbt.Def.Initialize
 import sbt.Def.taskKey
-import sbt.Keys._
 import sbt._
 
 /** Identifies the files that compose the webapp (resources, .class
@@ -52,19 +51,17 @@ object WebappComponentsPlugin extends AutoPlugin {
   override val projectSettings: Seq[Setting[_]] = {
 
     val webappResourcesTask: Initialize[Task[Map[String, File]]] =
-      (Compile / sourceDirectory)
+      Compat.Compile_sourceDirectory
         .map(_ / "webapp")
-        .map(WebappComponents.getResources)
+        .map(WebappComponents.getResources(_))
 
     val webappClassesTask: Initialize[Task[Map[String, File]]] =
-      (Runtime / fullClasspath)
-        .map(_.files)
-        .map(WebappComponents.getClasses)
+      Compat.classpathFiles
+        .map(WebappComponents.getClasses(_))
 
     val webappLibTask: Initialize[Task[Map[String, File]]] =
-      (Runtime / fullClasspath)
-        .map(_.files)
-        .map(WebappComponents.getLib)
+      Compat.classpathFiles
+        .map(WebappComponents.getLib(_))
 
     Seq(
       webappResources := webappResourcesTask.value,
