@@ -1,5 +1,4 @@
 package com.earldouglas.sbt.war
-
 import sbt.Keys._
 import sbt.Keys.{`package` => pkg}
 import sbt._
@@ -18,11 +17,12 @@ object WarPackagePlugin extends AutoPlugin {
 
   override lazy val projectSettings: Seq[Setting[_]] = {
 
+    // Flip webappContents around from (dst -> src) to (src -> dst)
+    val packageContents =
+      Compat.webappContents.map(_.map(_.swap).toSeq)
+
     val packageTaskSettings: Seq[Setting[_]] =
-      Defaults.packageTaskSettings(
-        pkg,
-        WarPackagePluginCompat.packageContents
-      )
+      Defaults.packageTaskSettings(pkg, packageContents)
 
     val packageArtifactSetting: Setting[_] =
       Compat.pkg_artifact := Artifact(moduleName.value, "war", "war")

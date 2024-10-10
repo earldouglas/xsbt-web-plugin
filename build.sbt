@@ -5,7 +5,7 @@ organization := "com.earldouglas"
 sbtPlugin := true
 scalacOptions ++= Seq("-feature", "-deprecation")
 scalaVersion := "2.12.20"
-crossScalaVersions += "3.3.4"
+crossScalaVersions += "3.5.1"
 pluginCrossBuild / sbtVersion := {
   scalaBinaryVersion.value match {
     case "2.12" => (pluginCrossBuild / sbtVersion).value

@@ -51,16 +51,16 @@ object WebappComponentsPlugin extends AutoPlugin {
   override val projectSettings: Seq[Setting[_]] = {
 
     val webappResourcesTask: Initialize[Task[Map[String, File]]] =
-      (Compat.Compile_sourceDirectory)
+      Compat.Compile_sourceDirectory
         .map(_ / "webapp")
         .map(WebappComponents.getResources(_))
 
     val webappClassesTask: Initialize[Task[Map[String, File]]] =
-      WebappComponentsPluginCompat.classpathFiles
+      Compat.classpathFiles
         .map(WebappComponents.getClasses(_))
 
     val webappLibTask: Initialize[Task[Map[String, File]]] =
-      WebappComponentsPluginCompat.classpathFiles
+      Compat.classpathFiles
         .map(WebappComponents.getLib(_))
 
     Seq(

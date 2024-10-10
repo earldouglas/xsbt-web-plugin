@@ -47,7 +47,7 @@ object WarPackageRunnerPlugin extends AutoPlugin {
         stopContainerInstance()
 
         val runnerJars: Seq[File] =
-          WarPackageRunnerPluginCompat.runnerJars(War).value
+          Compat.managedJars(War).value
 
         runnerJars match {
           case runner :: Nil =>
@@ -60,7 +60,7 @@ object WarPackageRunnerPlugin extends AutoPlugin {
                   runner.getPath(),
                   "--port",
                   warPort.value.toString(),
-                  WarPackageRunnerPluginCompat
+                  Compat
                     .toFile(pkg)
                     .value
                     .getPath()

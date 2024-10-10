@@ -81,7 +81,7 @@ object WebappComponentsRunnerPlugin extends AutoPlugin {
         stopContainerInstance()
 
         val runnerJars: Seq[File] =
-          WebappPackageRunnerPluginCompat.runnerJars(Webapp).value
+          Compat.managedJars(Webapp).value
 
         streams.value.log.info("[sbt-war] Starting server")
         val process: ScalaProcess =
